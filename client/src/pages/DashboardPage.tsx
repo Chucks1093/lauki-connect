@@ -1,18 +1,39 @@
 import { useEffect, useState } from 'react';
+import { LandingMatchCard } from '../components/matches/LandingMatchCard.tsx';
 import { profileService, type SavedProfile } from '../services/profile.service.ts';
-import {
-  Bookmark,
-  Clock3,
-  Database,
-  ExternalLink,
-  Github,
-  Sparkles,
-  UserRoundSearch,
-  Wallet,
-} from 'lucide-react';
+import type { ProfileMatch } from '../services/profile.service.ts';
 
-function shortenAddress(address: string) {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+function mapSavedProfileToMatch(profile: SavedProfile): ProfileMatch {
+  return {
+    id: profile.profileId,
+    name: profile.name,
+    role: profile.role,
+    company: profile.company,
+    avatarUrl: profile.avatarUrl ?? null,
+    shortDescription: profile.shortDescription ?? null,
+    ensName: profile.ensName ?? null,
+    walletAddress: profile.profileWalletAddress ?? null,
+    walletAgeDays: profile.walletAgeDays ?? null,
+    walletVolumeUsd: profile.walletVolumeUsd ?? null,
+    baseTxCount: profile.baseTxCount ?? null,
+    onchainActivityGrade: profile.onchainActivityGrade ?? null,
+    farcasterHandle: profile.farcasterHandle ?? null,
+    farcasterUrl: profile.farcasterUrl ?? null,
+    farcasterFollowerCount: profile.farcasterFollowerCount ?? null,
+    xHandle: profile.xHandle ?? null,
+    xUrl: profile.xUrl ?? null,
+    githubHandle: profile.githubHandle ?? null,
+    githubUrl: profile.githubUrl ?? null,
+    linkedinHandle: profile.linkedinHandle ?? null,
+    linkedinUrl: profile.linkedinUrl ?? null,
+    talentProtocolUrl: profile.talentProtocolUrl ?? null,
+    talentScore: profile.talentScore ?? null,
+    contributionSummary: profile.contributionSummary,
+    notableContracts: profile.notableContracts,
+    score: profile.score ?? 60,
+    reason: profile.reason ?? 'Saved from a previous discovery search.',
+    sourceUrl: profile.sourceUrl,
+  };
 }
 
 export function DashboardPage() {
@@ -42,140 +63,40 @@ export function DashboardPage() {
 
   return (
     <section className="grid gap-6">
-      <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <div className="rounded-[32px] border border-white/10 bg-slate-950/55 p-6 backdrop-blur-sm sm:p-8">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-amber-200">
-            Saved profiles
-          </p>
-          <h2 className="mt-3 font-grotesque text-4xl font-semibold tracking-tight text-white">
-            Dashboard
-          </h2>
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-400">
-            Keep the best investor, builder, operator, and partner matches here so the shortlist is
-            always ready.
-          </p>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
-          {[
-            { label: 'Profiles', value: savedProfiles.length, icon: UserRoundSearch },
-            { label: 'Storage', value: 'Supabase', icon: Database },
-            { label: 'State', value: 'Wallet-linked', icon: Clock3 },
-          ].map((item) => (
-            <div
-              key={item.label}
-              className="rounded-[28px] border border-white/10 bg-white/[0.04] p-5 backdrop-blur-sm"
-            >
-              <item.icon className="size-5 text-amber-200" />
-              <p className="mt-4 text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
-                {item.label}
-              </p>
-              <p className="mt-2 font-grotesque text-2xl font-semibold text-white">
-                {item.value}
-              </p>
-            </div>
-          ))}
-        </div>
+      <div className="rounded-[32px] border border-black/6 bg-white/72 px-5 py-7 backdrop-blur-sm sm:px-7 sm:py-8">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#ff5c16]">
+          Saved profiles
+        </p>
+        <h1 className="mt-3 font-manrope text-4xl font-semibold tracking-[-0.04em] text-neutral-950">
+          Saved
+        </h1>
+        <p className="mt-3 max-w-2xl text-sm leading-7 text-neutral-600">
+          Profiles you saved earlier stay here so you can revisit the strongest builders,
+          investors, operators, and partners.
+        </p>
       </div>
 
       {error ? (
-        <p className="rounded-2xl border border-red-400/20 bg-red-400/8 px-4 py-3 text-sm text-red-200">
+        <p className="rounded-2xl border border-red-400/20 bg-red-400/8 px-4 py-3 text-sm text-red-600">
           {error}
         </p>
       ) : null}
 
       {savedProfiles.length === 0 ? (
-        <div className="rounded-[32px] border border-white/10 bg-white/[0.04] p-8 text-center backdrop-blur-sm">
-          <p className="font-grotesque text-2xl font-semibold text-white">No saved profiles yet</p>
-          <p className="mt-3 text-sm text-slate-400">
+        <div className="rounded-[32px] border border-black/6 bg-white/72 p-8 text-center backdrop-blur-sm">
+          <p className="font-manrope text-2xl font-semibold text-neutral-950">No saved profiles yet</p>
+          <p className="mt-3 text-sm text-neutral-600">
             Search from the landing page and save the strongest profiles you want to revisit.
           </p>
         </div>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {savedProfiles.map((profile) => (
-            <article
+            <LandingMatchCard
+              isSaved
               key={profile.id}
-              className="group rounded-[30px] border border-white/10 bg-slate-950/55 p-6 backdrop-blur-sm transition hover:border-amber-300/20 hover:bg-slate-950/70"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                    Saved profile
-                  </p>
-                  <h3 className="mt-3 font-grotesque text-2xl font-semibold leading-tight text-white">
-                    {profile.name}
-                  </h3>
-                  <p className="mt-3 text-sm text-slate-300">
-                    {profile.role} at {profile.company}
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-400">
-                    {profile.profileWalletAddress ? (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-white/10 px-2.5 py-1">
-                        <Wallet className="size-3.5" />
-                        {profile.ensName ?? shortenAddress(profile.profileWalletAddress)}
-                      </span>
-                    ) : null}
-                    {profile.farcasterUrl && profile.farcasterHandle ? (
-                      <a
-                        className="inline-flex items-center gap-1 rounded-full border border-white/10 px-2.5 py-1 transition hover:border-white/20 hover:text-white"
-                        href={profile.farcasterUrl}
-                        rel="noreferrer"
-                        target="_blank"
-                      >
-                        fc/{profile.farcasterHandle}
-                        <ExternalLink className="size-3.5" />
-                      </a>
-                    ) : null}
-                    {profile.xUrl && profile.xHandle ? (
-                      <a
-                        className="inline-flex items-center gap-1 rounded-full border border-white/10 px-2.5 py-1 transition hover:border-white/20 hover:text-white"
-                        href={profile.xUrl}
-                        rel="noreferrer"
-                        target="_blank"
-                      >
-                        @{profile.xHandle}
-                        <ExternalLink className="size-3.5" />
-                      </a>
-                    ) : null}
-                    {profile.githubUrl && profile.githubHandle ? (
-                      <a
-                        className="inline-flex items-center gap-1 rounded-full border border-white/10 px-2.5 py-1 transition hover:border-white/20 hover:text-white"
-                        href={profile.githubUrl}
-                        rel="noreferrer"
-                        target="_blank"
-                      >
-                        <Github className="size-3.5" />
-                        {profile.githubHandle}
-                      </a>
-                    ) : null}
-                    {profile.talentProtocolUrl ? (
-                      <a
-                        className="inline-flex items-center gap-1 rounded-full border border-white/10 px-2.5 py-1 transition hover:border-white/20 hover:text-white"
-                        href={profile.talentProtocolUrl}
-                        rel="noreferrer"
-                        target="_blank"
-                      >
-                        <Sparkles className="size-3.5" />
-                        Talent
-                      </a>
-                    ) : null}
-                  </div>
-                </div>
-                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-400">
-                  <Bookmark className="size-3.5" />
-                </span>
-              </div>
-              {profile.reason ? (
-                <p className="mt-5 text-sm text-slate-400">{profile.reason}</p>
-              ) : null}
-              {profile.contributionSummary ? (
-                <p className="mt-3 text-sm text-slate-500">{profile.contributionSummary}</p>
-              ) : null}
-              <p className="mt-2 text-sm text-slate-500">
-                {new Date(profile.createdAt).toLocaleString()}
-              </p>
-            </article>
+              match={mapSavedProfileToMatch(profile)}
+            />
           ))}
         </div>
       )}

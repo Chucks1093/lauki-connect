@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Bookmark, ChevronDown, LogOut } from 'lucide-react';
+import { Bookmark, ChevronDown, Home, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { signInWithBase } from '@/lib/baseAuth';
 import { authService } from '@/services/auth.service';
@@ -95,7 +95,14 @@ export function ConnectButton() {
         <DropdownMenuSeparator className="bg-black/6" />
         <DropdownMenuItem
           className="cursor-pointer rounded-xl px-3 py-2.5 text-sm text-neutral-700 focus:bg-[#fff7f2] focus:text-neutral-900"
-          onSelect={() => navigate('/dashboard')}
+          onSelect={() => navigate('/')}
+        >
+          <Home className="size-4 text-[#ff5c16]" />
+          Home
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="cursor-pointer rounded-xl px-3 py-2.5 text-sm text-neutral-700 focus:bg-[#fff7f2] focus:text-neutral-900"
+          onSelect={() => navigate('/saved')}
         >
           <Bookmark className="size-4 text-[#ff5c16]" />
           Saved matches
