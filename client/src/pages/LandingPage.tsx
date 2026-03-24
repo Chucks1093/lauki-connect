@@ -101,8 +101,8 @@ export function LandingPage() {
 			<div className="relative overflow-hidden rounded-[36px] border border-black/6 bg-white/72 px-5 py-8 backdrop-blur-sm sm:px-8 sm:py-16">
 				<div className="relative mx-auto flex max-w-3xl flex-col items-center text-center">
 					<LandingHero
-						description="Find the right collaborator, investor, operator, or opportunity. Lauki Connect helps teams discover relevant matches and move faster."
-						title="better introductions"
+						description="Find the right collaborator, investor, operator, or partner. Lauki Connect helps teams discover relevant profiles and move faster."
+						title="builder profiles"
 					/>
 					<LandingSearchBar
 						goal={goal}

@@ -12,12 +12,12 @@ export function LandingHero({ title, description }: LandingHeroProps) {
 				<span className="inline-flex size-7 items-center justify-center rounded-full bg-[#ff5c16] text-white">
 					<Star className="size-3.5 stroke-3" />
 				</span>
-				<span className="mr-3 font-manrope">Smart introductions</span>
+				<span className="mr-3 font-manrope">Smart matches</span>
 			</div>
 
 			<div className="mt-5 max-w-3xl">
-				<h1 className="font-manrope text-4xl font-semibold leading-[1.08] tracking-[-0.045em] text-neutral-900 sm:text-5xl md:text-6xl">
-					Turn business needs into
+				<h1 className="font-manrope text-4xl font-semibold leading-[1.08] tracking-[-0.045em] text-neutral-600 sm:text-5xl md:text-6xl">
+					Find trusted Base
 					<span className="block text-[#ff5c16]">{title}</span>
 				</h1>
 				<p className="mx-auto mt-4 max-w-lg font-manrope text-sm leading-6 text-neutral-600 sm:text-base">
