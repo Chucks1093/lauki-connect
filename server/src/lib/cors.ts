@@ -11,18 +11,22 @@ function isLocalhostOrigin(origin: string) {
 
 export function buildCorsHeaders(request: NextRequest) {
   const requestOrigin = normalizeOrigin(request.headers.get('origin'));
-  const configuredOrigin = normalizeOrigin(env.clientOrigin);
+  const configuredOrigins = [
+    normalizeOrigin(env.clientOrigin),
+    ...env.clientOrigins.map(origin => normalizeOrigin(origin)),
+  ].filter(Boolean);
 
-  let allowOrigin = configuredOrigin;
+  let allowOrigin = configuredOrigins[0] ?? '';
 
   if (!allowOrigin && requestOrigin) {
     allowOrigin = requestOrigin;
   }
 
-  if (
-    requestOrigin &&
-    (!configuredOrigin || requestOrigin === configuredOrigin || isLocalhostOrigin(configuredOrigin))
-  ) {
+  const requestMatchesConfiguredOrigin = configuredOrigins.some(
+    origin => origin === requestOrigin || isLocalhostOrigin(origin),
+  );
+
+  if (requestOrigin && (!configuredOrigins.length || requestMatchesConfiguredOrigin)) {
     allowOrigin = requestOrigin;
   }
 

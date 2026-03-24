@@ -9,11 +9,25 @@ function readEnvValue(value: string | undefined) {
   return trimmedValue.length > 0 ? trimmedValue : undefined;
 }
 
+function readEnvValues(value: string | undefined) {
+  const normalizedValue = readEnvValue(value);
+
+  if (!normalizedValue) {
+    return [];
+  }
+
+  return normalizedValue
+    .split(',')
+    .map(origin => origin.trim())
+    .filter(Boolean);
+}
+
 const envSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url().default('https://placeholder.supabase.co'),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY: z.string().optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).default('placeholder-service-role-key'),
   CLIENT_ORIGIN: z.string().default('http://localhost:5173'),
+  CLIENT_ORIGINS: z.array(z.string()).default([]),
   BASE_RPC_URL: z.string().default('https://mainnet.base.org'),
   SESSION_COOKIE_NAME: z.string().default('lauki_connect_session'),
   AGENT_API_BASE: z.string().url().optional(),
@@ -27,6 +41,7 @@ const parsedEnv = envSchema.parse({
   SUPABASE_SERVICE_ROLE_KEY:
     readEnvValue(process.env.SUPABASE_SERVICE_ROLE_KEY) || 'placeholder-service-role-key',
   CLIENT_ORIGIN: readEnvValue(process.env.CLIENT_ORIGIN),
+  CLIENT_ORIGINS: readEnvValues(process.env.CLIENT_ORIGINS),
   BASE_RPC_URL: readEnvValue(process.env.BASE_RPC_URL) || 'https://mainnet.base.org',
   SESSION_COOKIE_NAME: readEnvValue(process.env.SESSION_COOKIE_NAME),
   AGENT_API_BASE: readEnvValue(process.env.AGENT_API_BASE),
@@ -37,6 +52,7 @@ export const env = {
   supabasePublishableDefaultKey: parsedEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY,
   supabaseServiceRoleKey: parsedEnv.SUPABASE_SERVICE_ROLE_KEY,
   clientOrigin: parsedEnv.CLIENT_ORIGIN,
+  clientOrigins: parsedEnv.CLIENT_ORIGINS,
   baseRpcUrl: parsedEnv.BASE_RPC_URL,
   sessionCookieName: parsedEnv.SESSION_COOKIE_NAME,
   agentApiBase: parsedEnv.AGENT_API_BASE,
