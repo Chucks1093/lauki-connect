@@ -224,7 +224,7 @@ export function LandingMatchCard({
 					})}
 				</div>
 
-				<div className="mt-4">
+				<div className="mt-7">
 					<ProfileDetailDialog
 						isSaved={isSaved}
 						isSaving={isSaving}

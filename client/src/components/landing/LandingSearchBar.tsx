@@ -38,8 +38,8 @@ export function LandingSearchBar({
             onChange={(event) => onGoalChange(event.target.value)}
             placeholder={
               isAuthenticated
-                ? 'I need an intro to investors interested in creator tools.'
-                : 'Search builders, investors, and partners.'
+                ? 'Find Base builders, investors, operators, and partners.'
+                : 'Search Base builders, investors, and partners.'
             }
             value={goal}
           />

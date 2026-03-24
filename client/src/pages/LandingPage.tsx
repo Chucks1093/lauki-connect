@@ -16,7 +16,7 @@ export function LandingPage() {
 	});
 	const isAuthenticated = authSession?.authenticated ?? false;
 	const [goal, setGoal] = useState(
-		'I need an intro to investors interested in creator tools.'
+		'Find strong Base builders working on wallets, agents, or onchain apps.'
 	);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -28,22 +28,22 @@ export function LandingPage() {
 		{
 			label: 'Builder',
 			prompt:
-				'I need an intro to strong builders working on Base-native products.',
+				'Find strong Base builders shipping consumer apps, wallets, or developer tools.',
 		},
 		{
 			label: 'Investor',
 			prompt:
-				'I want an intro to investors active in early-stage crypto and creator tools.',
+				'Find Base investors backing early-stage consumer crypto, creator, or infrastructure products.',
 		},
 		{
 			label: 'Operator',
 			prompt:
-				'I need an operator with growth and ecosystem experience for a Base project.',
+				'Find operators with Base ecosystem, growth, and community experience.',
 		},
 		{
 			label: 'Partner',
 			prompt:
-				'I need a strategic partner for distribution and ecosystem collaboration.',
+				'Find Base-native partners for distribution, ecosystem support, or integrations.',
 		},
 	];
 

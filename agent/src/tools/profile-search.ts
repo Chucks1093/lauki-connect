@@ -139,33 +139,47 @@ async function searchFarcasterCandidates(query: string, limit: number, env: Agen
     return [];
   }
 
-  const response = await fetch(
-    `https://api.neynar.com/v2/farcaster/user/search/?q=${encodeURIComponent(query)}&limit=${Math.min(
-      limit,
-      5,
-    )}`,
-    {
-      headers: {
-        "x-api-key": env.NEYNAR_API_KEY,
-        Accept: "application/json",
-      },
-      cache: "no-store",
-    },
-  );
+  const searchQueries = buildProviderQueries(query);
+  const dedupedUsers = new Map<number, NeynarUser>();
 
-  if (!response.ok) {
-    console.warn("Neynar user search failed", {
-      query,
-      status: response.status,
-    });
-    return [];
+  for (const searchQuery of searchQueries) {
+    const response = await fetch(
+      `https://api.neynar.com/v2/farcaster/user/search/?q=${encodeURIComponent(searchQuery)}&limit=5`,
+      {
+        headers: {
+          "x-api-key": env.NEYNAR_API_KEY,
+          Accept: "application/json",
+        },
+        cache: "no-store",
+      },
+    );
+
+    if (!response.ok) {
+      console.warn("Neynar user search failed", {
+        query: searchQuery,
+        status: response.status,
+      });
+      continue;
+    }
+
+    const payload = (await response.json()) as FarcasterSearchResponse;
+    const users = payload.result?.users ?? [];
+
+    for (const user of users) {
+      if (!dedupedUsers.has(user.fid)) {
+        dedupedUsers.set(user.fid, user);
+      }
+    }
+
+    if (dedupedUsers.size >= limit * 3) {
+      break;
+    }
   }
 
-  const payload = (await response.json()) as FarcasterSearchResponse;
-  const users = payload.result?.users ?? [];
-
   const candidates = await Promise.all(
-    users.slice(0, limit).map((user) => mapFarcasterCandidate(user, query, env)),
+    Array.from(dedupedUsers.values())
+      .slice(0, limit * 3)
+      .map((user) => mapFarcasterCandidate(user, query, env)),
   );
 
   return candidates
@@ -173,6 +187,31 @@ async function searchFarcasterCandidates(query: string, limit: number, env: Agen
     .sort((left, right) => right.score - left.score)
     .sort((left, right) => countSocialFootprint(right) - countSocialFootprint(left))
     .slice(0, limit);
+}
+
+function buildProviderQueries(query: string) {
+  const tokens = getQueryTerms(query).slice(0, 4);
+  const roleTerm = tokens.find((token) => roleKeywords.includes(token)) ?? "builder";
+  const topicTerms = tokens.filter((token) => token !== roleTerm);
+  const topicFragment = topicTerms.join(" ").trim();
+
+  return Array.from(
+    new Set(
+      [
+        query,
+        `${roleTerm} base`,
+        `${roleTerm} farcaster`,
+        `${roleTerm} onchain`,
+        topicFragment ? `${topicFragment} ${roleTerm}` : "",
+        topicFragment ? `${topicFragment} base` : "",
+        "base builder",
+        "base investor",
+        "base operator",
+      ]
+        .map((value) => value.replace(/\s+/g, " ").trim())
+        .filter((value) => value.length >= 3),
+    ),
+  ).slice(0, 6);
 }
 
 async function mapFarcasterCandidate(
