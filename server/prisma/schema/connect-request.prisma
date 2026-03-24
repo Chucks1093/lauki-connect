@@ -1,0 +1,9 @@
+model ConnectRequest {
+  id        String           @id @default(cuid())
+  goal      String
+  requester String?
+  createdAt DateTime         @default(now())
+  matches   CandidateMatch[]
+  feedback  FeedbackEvent[]
+}
+

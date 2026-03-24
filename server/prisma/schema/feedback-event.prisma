@@ -1,0 +1,10 @@
+model FeedbackEvent {
+  id               String         @id @default(cuid())
+  connectRequestId String
+  candidateMatchId String?
+  sentiment        String
+  note             String?
+  createdAt        DateTime       @default(now())
+  connectRequest   ConnectRequest @relation(fields: [connectRequestId], references: [id], onDelete: Cascade)
+}
+

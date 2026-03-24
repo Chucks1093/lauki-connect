@@ -1,11 +1,28 @@
 # Lauki Connect Build Sections
 
-This file breaks the full build into clear sections with concrete steps. The goal is to make execution straightforward from setup to demo.
+This file breaks the build into vertical slices from start to finish.
 
-## Section 1: Project Foundation
+The goal is to build one feature at a time, test it through the frontend, and only then move to the next feature.
+
+## Build Rule
+
+Each section should ship a working user-visible flow, not just backend or frontend code in isolation.
+
+For every section, we should aim to complete:
+
+1. UI
+2. API
+3. persistence if needed
+4. happy-path test
+5. error-state test
+6. short manual demo check
+
+That means we should avoid building the whole backend first and the whole frontend later.
+
+## Section 1: Workspace Foundation
 
 Purpose:
-Set up the workspace so the app can run locally and grow cleanly.
+Set up the repo so both apps can run locally and we can iterate safely.
 
 Steps:
 1. create the root project structure
@@ -14,227 +31,259 @@ Steps:
 4. add root `docker-compose.yml` for Postgres
 5. add `.gitignore`
 6. define package managers and scripts
-7. confirm both apps can install dependencies
-8. confirm both apps can build successfully
+7. install dependencies for both apps
+8. confirm both apps build
+9. add a basic health check route on the server
+10. add a basic frontend shell that can talk to the server
 
 Deliverable:
 A working local workspace with Vite frontend, Node.js backend, and Docker Postgres.
 
-## Section 2: Product Flow Definition
+Test check:
+- frontend loads locally
+- backend responds locally
+- `GET /api/health` works from the frontend
+
+## Section 2: Product Contract
 
 Purpose:
-Define exactly what the app does before building too much logic.
+Lock the MVP before building too much behavior.
 
 Steps:
 1. define the main user of the app
-2. define the main problem the user is trying to solve
-3. define the main input the user submits
-4. define the output the app should return
+2. define the main problem they are trying to solve
+3. define the exact request input fields for MVP
+4. define the exact output fields for a match
 5. define what makes a match useful
 6. define the first success metric for the MVP
-7. define the shortest demo flow from input to result
+7. define the shortest demo flow from request to result
+8. write 3 to 5 sample requests we can use throughout development
+9. define what we mean by `good enough` for the first ranking pass
 
 Deliverable:
-A locked MVP flow for requests, matches, intros, and feedback.
+A locked MVP contract for requests, matches, intro suggestions, and feedback.
 
-## Section 3: Data Model and Persistence
+Test check:
+- every later feature can be checked against these inputs, outputs, and demo scenarios
+
+## Section 3: Request Submission Slice
 
 Purpose:
-Create the data backbone of the app.
+Build the first real feature: submit a request from the frontend and save it.
 
 Steps:
-1. design Prisma models for requests, matches, intro suggestions, and feedback
-2. add the models to `server/prisma/schema.prisma`
+1. design the `ConnectRequest` model
+2. add the model to `server/prisma/schema.prisma`
 3. create the database connection layer
 4. run `prisma generate`
-5. push the schema to the local Postgres database
-6. test basic create and read operations
-7. make sure the database structure supports future Lauki integration
+5. push the schema to local Postgres
+6. add `POST /api/connect-requests`
+7. validate request input with Zod
+8. build the request form UI
+9. collect goal, requester, and optional filters
+10. submit the form from the frontend
+11. handle loading, success, and error states
+12. show a confirmation state or redirect after creation
 
 Deliverable:
-A working database schema that can persist app data.
+A working request flow from form input to a saved request record.
 
-## Section 4: Backend API
+Test check:
+- user can submit a request from the UI
+- request is saved in the database
+- invalid input shows clear errors
 
-Purpose:
-Build the Node.js API that powers the product.
-
-Steps:
-1. set up the Express app and shared middleware
-2. add a health route
-3. add a route to create a connect request
-4. validate request input with Zod
-5. add a route to list saved requests
-6. add a route to fetch matches for a request
-7. add a route to submit feedback
-8. standardize API response shapes
-9. add basic error handling
-10. verify all routes work locally
-
-Deliverable:
-A stable API for request creation, match retrieval, and feedback.
-
-## Section 5: Lauki Integration Layer
+## Section 4: First Match Results Slice
 
 Purpose:
-Create a clean boundary for Lauki-powered matching.
+Return and display the first ranked matches using mock Lauki data.
 
 Steps:
-1. define the adapter interface for Lauki data access
+1. define the Lauki adapter interface
 2. start with a mock adapter for local development
-3. define what data is needed from Lauki
-4. map Lauki entities into local match candidate types
-5. add a place for profile, relationship, and context data
-6. structure the code so the mock adapter can be swapped later
-7. prepare the code for a real Lauki integration
+3. define the candidate match shape
+4. implement a simple ranking function
+5. add explanation generation for each match
+6. add intro draft generation for each match
+7. add `GET /api/connect-requests/:id/matches`
+8. build the results page in the frontend
+9. fetch matches for the created request
+10. show score, reason, and intro draft
+11. handle empty and failure states
 
 Deliverable:
-A reusable Lauki adapter boundary with mock data first and real integration later.
+A user can submit a request and see ranked matches with explanations.
 
-## Section 6: Matching and Ranking Engine
+Test check:
+- seeded mock candidates return deterministic results
+- results render in the frontend in ranked order
+- empty state and API failure state are visible and understandable
+
+## Section 5: Match Detail Slice
 
 Purpose:
-Turn raw candidate data into ranked recommendations.
+Turn a ranked result into something the user can inspect and act on.
 
 Steps:
-1. define the candidate match shape
-2. create scoring rules for relevance
-3. add scoring rules for role alignment
-4. add scoring rules for geography or market context
-5. add scoring rules for mutual context or network proximity
-6. sort matches by score
-7. generate a short explanation for each match
-8. generate a suggested intro angle
-9. handle low-quality or low-confidence results
-10. return a clean ranked list to the API
+1. persist candidate matches if needed for later actions
+2. create the match detail screen
+3. show the full explanation for the match
+4. show key profile and context details
+5. show the recommended intro angle
+6. show the suggested intro message
+7. add simple match status labels such as `new`, `reviewed`, or `contacted`
+8. link each result card to the detail page
 
 Deliverable:
-A ranking engine that explains why each recommendation appears.
+A match detail view that makes each recommendation actionable.
 
-## Section 7: Frontend App Shell
+Test check:
+- clicking a result opens the correct detail view
+- detail data matches what was shown in results
+- status labels render correctly
+
+## Section 6: Feedback Slice
 
 Purpose:
-Build the main product surface in Vite.
+Capture whether the recommendations are useful.
 
 Steps:
-1. set up the React app entry point
-2. add routing
-3. create a shared app shell layout
-4. create the landing page
-5. create the dashboard page
-6. create the new request page
-7. create the results page
-8. create the match detail page
-9. add shared styling and layout rules
-10. make sure the app works on desktop and mobile
+1. design the `FeedbackEvent` model
+2. store feedback against the request and optional match
+3. add `POST /api/feedback`
+4. add feedback controls on result cards or detail view
+5. support positive and negative feedback
+6. support an optional note
+7. show success and failure states in the frontend
 
 Deliverable:
-A usable frontend shell with the main pages in place.
+A working feedback loop with stored feedback events.
 
-## Section 8: Request Submission Flow
+Test check:
+- feedback can be submitted from the UI
+- feedback is saved correctly
+- repeated feedback behavior is defined and handled clearly
+
+## Section 7: Request History Slice
 
 Purpose:
-Let users submit what they need and get a real response.
+Make past requests and their results easy to revisit.
 
 Steps:
-1. build the request form UI
-2. collect goal, requester, and optional filters
-3. validate client-side inputs
-4. submit the form to the backend
-5. handle loading and error states
-6. store the created request id
-7. redirect the user to the results screen
-8. confirm the backend response is rendered correctly
+1. add `GET /api/connect-requests`
+2. build the dashboard page
+3. list saved requests with useful metadata
+4. allow navigation back into results for an old request
+5. show empty state for a new user
+6. keep the data shape simple and fast to scan
 
 Deliverable:
-A working request flow from form input to match results.
+A basic dashboard with saved request history.
 
-## Section 9: Match Results Experience
+Test check:
+- old requests appear after creation
+- user can reopen previous results
+- empty dashboard state is clear
+
+## Section 8: Ranking Improvement Slice
 
 Purpose:
-Show the recommendations in a way that is easy to understand and act on.
+Improve match quality beyond the first simple scoring pass.
 
 Steps:
-1. fetch matches for a saved request
-2. build reusable match cards
-3. show score, summary, and reasoning
-4. show suggested intro direction
-5. link each result to a detail screen
-6. add empty states
-7. add failure states
-8. make sure result ordering is clear
-9. make the results easy to scan quickly
+1. add scoring rules for role alignment
+2. add scoring rules for geography or market context
+3. add scoring rules for trust distance or network proximity
+4. add scoring rules for mutual context
+5. add recency or freshness where relevant
+6. handle low-confidence results
+7. refine explanation text so the reasons reflect the scoring logic
+8. compare improved scoring against the sample requests from Section 2
 
 Deliverable:
-A readable results experience that demonstrates the app clearly.
+A stronger ranking engine with more believable reasons.
 
-## Section 10: Match Detail and Intro Suggestion
+Test check:
+- ranking changes are visible on known sample requests
+- explanation text stays aligned with actual scoring behavior
+- weak matches are clearly identified
+
+## Section 9: Lauki Integration Slice
 
 Purpose:
-Expand a single recommendation into something actionable.
+Prepare the system to swap mock data for real Lauki-backed retrieval.
 
 Steps:
-1. create the match detail screen
-2. show the full explanation for the match
-3. show key profile and context details
-4. show the recommended intro angle
-5. show a suggested message draft
-6. add status labels such as `new`, `reviewed`, or `contacted`
-7. prepare the structure for future Telegram or email actions
+1. define exactly what data is needed from Lauki
+2. map Lauki entities into local candidate types
+3. isolate all external integration code behind the adapter boundary
+4. add configuration for mock versus live mode
+5. add fallback behavior if live Lauki data is unavailable
+6. verify the API contract does not need to change when the adapter changes
 
 Deliverable:
-A match detail view that turns ranking output into action.
+A clean Lauki adapter boundary with mock data first and live integration ready later.
 
-## Section 11: Feedback Loop
+Test check:
+- mock mode still works reliably
+- live adapter can be introduced without rewriting the frontend
+
+## Section 10: Action Workflow Slice
 
 Purpose:
-Capture whether the recommendations are actually useful.
+Move from recommendation to outreach.
 
 Steps:
-1. add feedback controls on results or detail views
-2. support positive and negative feedback
-3. send feedback events to the backend
-4. store feedback in the database
-5. relate feedback back to the request and match
-6. prepare the scoring layer to use this signal later
-7. track what recommendations perform well
+1. define the first handoff action for MVP or near-MVP
+2. start with a simple action such as copy intro text or mark as contacted
+3. prepare the structure for future Telegram or email actions
+4. track outcome states such as `intro sent`, `accepted`, `replied`, or `converted`
+5. make sure action history is visible in the UI
 
 Deliverable:
-A stored feedback loop that can improve ranking over time.
+A basic action layer that helps users follow through on a match.
 
-## Section 12: Demo Readiness
+Test check:
+- user can take at least one clear follow-up action from the frontend
+- outcome state changes are saved and visible
+
+## Section 11: Quality and Demo Readiness
 
 Purpose:
-Make the project presentable for Lauki and easy to understand fast.
+Make the product stable, understandable, and easy to demo.
 
 Steps:
 1. clean up naming across the app
-2. remove temporary placeholder content that is no longer needed
-3. make the landing page explain the product clearly
-4. prepare seeded mock scenarios for demo requests
-5. test the full flow end to end
-6. confirm setup instructions are accurate
+2. remove old placeholders and dead code
+3. prepare seeded mock scenarios for demos
+4. test the full flow end to end
+5. verify setup instructions are accurate
+6. make the landing page explain the product clearly
 7. prepare short launch copy
-8. prepare a short product explanation
-9. prepare screenshots or a quick walkthrough
+8. prepare screenshots or a short walkthrough
 
 Deliverable:
-A demo-ready build with a clear story and working product flow.
+A demo-ready MVP that clearly shows the value of Lauki Connect.
 
-## Section 13: Post-MVP Expansion
+Test check:
+- a new user can understand the product quickly
+- the full request to result flow works without manual fixes
+- demo scenarios are reliable and repeatable
 
-Purpose:
-Capture what comes after the first working version.
+## Recommended Build Order Summary
 
-Steps:
-1. replace the mock Lauki adapter with a real integration
-2. add filters for industry, region, and role
-3. add authentication if needed
-4. add Telegram or email handoff
-5. add saved history and search
-6. add relationship strength or trust distance scoring
-7. add team collaboration features
-8. add analytics around intro outcomes
+Build in this order:
 
-Deliverable:
-A roadmap for turning the MVP into a stronger product.
+1. foundation
+2. product contract
+3. request submission
+4. first match results
+5. match detail
+6. feedback
+7. request history
+8. ranking improvements
+9. Lauki integration
+10. action workflow
+11. demo readiness
+
+This order keeps the project user-visible at every step and makes it easier to test one feature at a time through the frontend.

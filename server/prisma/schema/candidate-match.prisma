@@ -1,0 +1,14 @@
+model CandidateMatch {
+  id               String         @id @default(cuid())
+  connectRequestId String
+  name             String
+  role             String
+  company          String
+  location         String
+  score            Int
+  reason           String
+  introDraft       String
+  createdAt        DateTime       @default(now())
+  connectRequest   ConnectRequest @relation(fields: [connectRequestId], references: [id], onDelete: Cascade)
+}
+

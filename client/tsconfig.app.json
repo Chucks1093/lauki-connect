@@ -1,0 +1,56 @@
+{
+	"compilerOptions": {
+		"tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+		"target": "ES2022",
+		"useDefineForClassFields": true,
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"module": "ESNext",
+		"skipLibCheck": true,
+
+		/* Bundler mode */
+		"moduleResolution": "bundler",
+		"allowImportingTsExtensions": true,
+		"verbatimModuleSyntax": true,
+		"moduleDetection": "force",
+		"noEmit": true,
+		"jsx": "react-jsx",
+
+		/* Linting */
+		"strict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"erasableSyntaxOnly": true,
+		"noFallthroughCasesInSwitch": true,
+		"noUncheckedSideEffectImports": true,
+
+		"paths": {
+			"@/*": ["./src/*"],
+			"@components/*": ["./src/components/*"],
+			"@utils/*": ["./src/utils/*"]
+		}
+	},
+	"include": [
+		"src/App.tsx",
+		"src/main.tsx",
+		"src/vite-env.d.ts",
+		"src/index.css",
+		"src/router/**/*.ts",
+		"src/router/**/*.tsx",
+		"src/pages/DashboardPage.tsx",
+		"src/pages/LandingPage.tsx",
+		"src/pages/MatchDetailPage.tsx",
+		"src/pages/MatchResultsPage.tsx",
+		"src/pages/NewRequestPage.tsx",
+		"src/services/api.service.ts",
+		"src/services/connect-request.service.ts",
+		"src/services/feedback.service.ts",
+		"src/services/health.service.ts",
+		"src/services/matches.service.ts",
+		"src/utils/env.utils.ts",
+		"src/lib/**/*.ts",
+		"src/components/matches/**/*.tsx",
+		"src/components/requests/**/*.tsx",
+		"src/components/shared/**/*.tsx",
+		"src/components/ui/**/*.tsx"
+	]
+}
