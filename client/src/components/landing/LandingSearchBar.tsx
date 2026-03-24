@@ -23,7 +23,7 @@ export function LandingSearchBar({
   onGoalChange,
   onSubmit,
 }: LandingSearchBarProps) {
-  const isSearchDisabled = !isAuthenticated || isSubmitting;
+  const isSearchDisabled = isSubmitting;
 
   return (
     <form
@@ -39,7 +39,7 @@ export function LandingSearchBar({
             placeholder={
               isAuthenticated
                 ? 'I need an intro to investors interested in creator tools.'
-                : 'Sign in to search builders, investors, and partners.'
+                : 'Search builders, investors, and partners.'
             }
             value={goal}
           />
@@ -61,7 +61,6 @@ export function LandingSearchBar({
                   ? 'rounded-[14px] border border-black/8 bg-white px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-45'
                   : 'rounded-[14px] border border-transparent px-4 py-2 text-sm font-medium text-neutral-500 transition hover:border-black/8 hover:bg-white/80 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-45'
               }
-              disabled={!isAuthenticated}
               onClick={() => onGoalChange(item.prompt)}
               type="button"
             >
@@ -69,12 +68,6 @@ export function LandingSearchBar({
             </button>
           ))}
         </div>
-
-        {!isAuthenticated ? (
-          <p className="mt-3 px-1 text-left text-xs text-neutral-500">
-            Sign in to unlock search.
-          </p>
-        ) : null}
       </div>
     </form>
   );

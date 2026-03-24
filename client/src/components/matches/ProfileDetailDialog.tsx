@@ -19,6 +19,9 @@ import type { ProfileMatch } from '../../services/profile.service.ts';
 
 type ProfileDetailDialogProps = {
   match: ProfileMatch;
+  isSaved?: boolean;
+  isSaving?: boolean;
+  onSave?: () => void;
   triggerClassName?: string;
 };
 
@@ -28,6 +31,9 @@ function shortenAddress(address: string) {
 
 export function ProfileDetailDialog({
   match,
+  isSaved = false,
+  isSaving = false,
+  onSave,
   triggerClassName = 'inline-flex items-center justify-center rounded-2xl border border-black/10 px-4 py-3 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50',
 }: ProfileDetailDialogProps) {
   return (
@@ -203,7 +209,18 @@ export function ProfileDetailDialog({
             </div>
           </div>
 
-          <DialogFooter className="border-t border-black/6 px-6 py-5" showCloseButton />
+          <DialogFooter className="border-t border-black/6 px-6 py-5" showCloseButton>
+            {onSave ? (
+              <button
+                className="inline-flex items-center justify-center rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isSaved || isSaving}
+                onClick={onSave}
+                type="button"
+              >
+                {isSaved ? 'Saved' : isSaving ? 'Saving...' : 'Save profile'}
+              </button>
+            ) : null}
+          </DialogFooter>
         </div>
       </DialogContent>
     </Dialog>

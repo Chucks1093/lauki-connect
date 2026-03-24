@@ -7,6 +7,7 @@ import { LandingInfoSection } from '../components/landing/LandingInfoSection.tsx
 import { LandingMatchesSection } from '../components/landing/LandingMatchesSection.tsx';
 import { LandingSearchBar } from '../components/landing/LandingSearchBar.tsx';
 import { profileService, type ProfileMatch } from '../services/profile.service.ts';
+import showToast from '../utils/toast.util.ts';
 
 export function LandingPage() {
 	const { data: authSession } = useQuery({
@@ -50,7 +51,7 @@ export function LandingPage() {
 		event.preventDefault();
 
 		if (!isAuthenticated) {
-			setError('Sign in first to search profiles.');
+			showToast.error('Sign in to see your results.');
 			return;
 		}
 
