@@ -1,9 +1,0 @@
-{
-	"rewrites": [
-		{
-			"source": "/api/(.*)",
-			"destination": "https://lauki-connect-server.vercel.app/api/$1"
-		},
-		{ "source": "/(.*)", "destination": "/" }
-	]
-}
