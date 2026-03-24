@@ -4,6 +4,7 @@ import { base } from 'viem/chains';
 import { fail, ok } from '@/lib/api';
 import { consumeNonce } from '@/lib/auth/auth-store';
 import { setSessionCookieOnResponse } from '@/lib/auth/session';
+import { preflight, withCors } from '@/lib/cors';
 import { env } from '@/lib/env';
 
 const client = createPublicClient({
@@ -30,12 +31,12 @@ export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => null)) as VerifyBody | null;
 
   if (!body?.address || !body.message || !body.signature) {
-    return fail('Missing required auth payload', 400);
+    return withCors(request, fail('Missing required auth payload', 400));
   }
 
   const nonce = extractNonce(body.message);
   if (!nonce || !(await consumeNonce(nonce))) {
-    return fail('Invalid or reused nonce', 401);
+    return withCors(request, fail('Invalid or reused nonce', 401));
   }
 
   const valid = await client.verifyMessage({
@@ -45,9 +46,13 @@ export async function POST(request: NextRequest) {
   });
 
   if (!valid) {
-    return fail('Invalid signature', 401);
+    return withCors(request, fail('Invalid signature', 401));
   }
 
   const response = ok({ address: body.address.toLowerCase() });
-  return setSessionCookieOnResponse(response, body.address.toLowerCase());
+  return withCors(request, setSessionCookieOnResponse(response, body.address.toLowerCase()));
+}
+
+export function OPTIONS(request: NextRequest) {
+  return preflight(request);
 }

@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { fail, ok } from '@/lib/api';
 import { getSession } from '@/lib/auth/session';
+import { preflight, withCors } from '@/lib/cors';
 import { listSavedProfiles, saveProfile } from '@/lib/profiles';
 
 type SaveProfileBody = {
@@ -36,30 +37,34 @@ type SaveProfileBody = {
   };
 };
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const session = await getSession();
 
   if (!session) {
-    return fail('Authentication required', 401);
+    return withCors(request, fail('Authentication required', 401));
   }
 
   const profiles = await listSavedProfiles(session.address);
-  return ok(profiles);
+  return withCors(request, ok(profiles));
 }
 
 export async function POST(request: NextRequest) {
   const session = await getSession();
 
   if (!session) {
-    return fail('Authentication required', 401);
+    return withCors(request, fail('Authentication required', 401));
   }
 
   const body = (await request.json().catch(() => null)) as SaveProfileBody | null;
 
   if (!body?.profile?.id || !body.profile.name) {
-    return fail('A valid profile payload is required', 400);
+    return withCors(request, fail('A valid profile payload is required', 400));
   }
 
   const savedProfile = await saveProfile(session.address, body.profile);
-  return ok(savedProfile, 201);
+  return withCors(request, ok(savedProfile, 201));
+}
+
+export function OPTIONS(request: NextRequest) {
+  return preflight(request);
 }
