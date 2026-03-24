@@ -13,6 +13,7 @@ export function LandingPage() {
 		queryKey: ['auth-session'],
 		queryFn: () => authService.getSession(),
 	});
+	const isAuthenticated = authSession?.authenticated ?? false;
 	const [goal, setGoal] = useState(
 		'I need an intro to investors interested in creator tools.'
 	);
@@ -47,6 +48,11 @@ export function LandingPage() {
 
 	async function handleQuickRequestSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
+
+		if (!isAuthenticated) {
+			setError('Sign in first to search profiles.');
+			return;
+		}
 
 		const trimmedGoal = goal.trim();
 		if (!trimmedGoal) {
@@ -99,6 +105,7 @@ export function LandingPage() {
 					/>
 					<LandingSearchBar
 						goal={goal}
+						isAuthenticated={isAuthenticated}
 						isSubmitting={isSubmitting}
 						onGoalChange={setGoal}
 						onSubmit={handleQuickRequestSubmit}

@@ -8,6 +8,7 @@ type QuickPrompt = {
 
 type LandingSearchBarProps = {
   goal: string;
+  isAuthenticated: boolean;
   isSubmitting: boolean;
   quickPrompts: QuickPrompt[];
   onGoalChange: (value: string) => void;
@@ -16,11 +17,14 @@ type LandingSearchBarProps = {
 
 export function LandingSearchBar({
   goal,
+  isAuthenticated,
   isSubmitting,
   quickPrompts,
   onGoalChange,
   onSubmit,
 }: LandingSearchBarProps) {
+  const isSearchDisabled = !isAuthenticated || isSubmitting;
+
   return (
     <form
       className="relative mt-10 w-full max-w-[48rem] rounded-[28px] border border-black/8 bg-white p-3 shadow-[0_20px_60px_rgba(18,18,18,0.08)] sm:p-4"
@@ -32,12 +36,16 @@ export function LandingSearchBar({
           <input
             className="h-14 w-full bg-transparent px-3 font-manrope text-[15px] text-neutral-700 outline-none placeholder:text-neutral-400"
             onChange={(event) => onGoalChange(event.target.value)}
-            placeholder="I need an intro to investors interested in creator tools."
+            placeholder={
+              isAuthenticated
+                ? 'I need an intro to investors interested in creator tools.'
+                : 'Sign in to search builders, investors, and partners.'
+            }
             value={goal}
           />
           <button
             className="absolute right-2 inline-flex size-11 items-center justify-center rounded-[16px] bg-[#ff5c16] text-white shadow-[0_12px_30px_rgba(255,92,22,0.22)] transition hover:bg-[#e75211] disabled:cursor-wait disabled:opacity-70"
-            disabled={isSubmitting}
+            disabled={isSearchDisabled}
             type="submit"
           >
             <ArrowRight className="size-4" />
@@ -50,9 +58,10 @@ export function LandingSearchBar({
               key={item.label}
               className={
                 index === 0
-                  ? 'rounded-[14px] border border-black/8 bg-white px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm transition hover:bg-neutral-50'
-                  : 'rounded-[14px] border border-transparent px-4 py-2 text-sm font-medium text-neutral-500 transition hover:border-black/8 hover:bg-white/80 hover:text-neutral-900'
+                  ? 'rounded-[14px] border border-black/8 bg-white px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-45'
+                  : 'rounded-[14px] border border-transparent px-4 py-2 text-sm font-medium text-neutral-500 transition hover:border-black/8 hover:bg-white/80 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-45'
               }
+              disabled={!isAuthenticated}
               onClick={() => onGoalChange(item.prompt)}
               type="button"
             >
@@ -60,6 +69,12 @@ export function LandingSearchBar({
             </button>
           ))}
         </div>
+
+        {!isAuthenticated ? (
+          <p className="mt-3 px-1 text-left text-xs text-neutral-500">
+            Sign in to unlock search.
+          </p>
+        ) : null}
       </div>
     </form>
   );

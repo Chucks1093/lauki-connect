@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { fail, ok } from '@/lib/api';
+import { getSession } from '@/lib/auth/session';
 import { searchProfiles } from '@/lib/profiles';
 
 type SearchBody = {
@@ -7,6 +8,12 @@ type SearchBody = {
 };
 
 export async function POST(request: NextRequest) {
+  const session = await getSession();
+
+  if (!session) {
+    return fail('Authentication required', 401);
+  }
+
   const body = (await request.json().catch(() => null)) as SearchBody | null;
 
   if (!body?.query || body.query.trim().length < 3) {
