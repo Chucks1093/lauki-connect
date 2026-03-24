@@ -4,21 +4,19 @@
 
 - landing page
 - dashboard page
-- new request page
-- results page
 - match detail page
+- connect button
+- saved matches dropdown
 
 ## Server
 
 - health endpoint
-- create request endpoint
-- match generation endpoint
-- feedback endpoint
-- Lauki adapter boundary
+- wallet auth routes
+- profile search endpoint
+- saved profiles endpoints
 
 ## Data
 
-- connect requests
-- candidate matches
-- intro suggestions
-- feedback events
+- profiles
+- saved profiles
+- auth nonces

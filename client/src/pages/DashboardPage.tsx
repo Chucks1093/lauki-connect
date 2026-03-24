@@ -1,29 +1,37 @@
 import { useEffect, useState } from 'react';
-import { ArrowRight, Clock3, Database, FolderSearch } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { Button } from '../components/ui/button.tsx';
+import { profileService, type SavedProfile } from '../services/profile.service.ts';
 import {
-  connectRequestService,
-  type ConnectRequest,
-} from '../services/connect-request.service.ts';
+  Bookmark,
+  Clock3,
+  Database,
+  ExternalLink,
+  Github,
+  Sparkles,
+  UserRoundSearch,
+  Wallet,
+} from 'lucide-react';
+
+function shortenAddress(address: string) {
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
 
 export function DashboardPage() {
-  const [requests, setRequests] = useState<ConnectRequest[]>([]);
+  const [savedProfiles, setSavedProfiles] = useState<SavedProfile[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
 
-    connectRequestService
-      .getConnectRequests()
+    profileService
+      .getSavedProfiles()
       .then((result) => {
         if (isMounted) {
-          setRequests(result);
+          setSavedProfiles(result);
         }
       })
       .catch(() => {
         if (isMounted) {
-          setError('Failed to load saved requests.');
+          setError('Failed to load saved profiles.');
         }
       });
 
@@ -37,22 +45,22 @@ export function DashboardPage() {
       <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <div className="rounded-[32px] border border-white/10 bg-slate-950/55 p-6 backdrop-blur-sm sm:p-8">
           <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-amber-200">
-            Saved requests
+            Saved profiles
           </p>
           <h2 className="mt-3 font-grotesque text-4xl font-semibold tracking-tight text-white">
             Dashboard
           </h2>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-400">
-            This is the live slice. Every card here should come from the database, not from a mock
-            client store.
+            Keep the best investor, builder, operator, and partner matches here so the shortlist is
+            always ready.
           </p>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
           {[
-            { label: 'Requests', value: requests.length, icon: FolderSearch },
-            { label: 'Persistence', value: 'DB-backed', icon: Database },
-            { label: 'Next slice', value: 'Match results', icon: Clock3 },
+            { label: 'Profiles', value: savedProfiles.length, icon: UserRoundSearch },
+            { label: 'Storage', value: 'Supabase', icon: Database },
+            { label: 'State', value: 'Wallet-linked', icon: Clock3 },
           ].map((item) => (
             <div
               key={item.label}
@@ -76,53 +84,97 @@ export function DashboardPage() {
         </p>
       ) : null}
 
-      {requests.length === 0 ? (
+      {savedProfiles.length === 0 ? (
         <div className="rounded-[32px] border border-white/10 bg-white/[0.04] p-8 text-center backdrop-blur-sm">
-          <p className="font-grotesque text-2xl font-semibold text-white">No saved requests yet</p>
+          <p className="font-grotesque text-2xl font-semibold text-white">No saved profiles yet</p>
           <p className="mt-3 text-sm text-slate-400">
-            Create the first real request and use this page to confirm the Section 3 flow is
-            working.
+            Search from the landing page and save the strongest profiles you want to revisit.
           </p>
-          <Button
-            asChild
-            className="mt-6 h-11 rounded-full bg-amber-300 px-5 text-[13px] font-semibold uppercase tracking-[0.18em] text-slate-950 hover:bg-amber-200"
-          >
-            <Link to="/requests/new">Create request</Link>
-          </Button>
         </div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
-          {requests.map((request) => (
+          {savedProfiles.map((profile) => (
             <article
-              key={request.id}
+              key={profile.id}
               className="group rounded-[30px] border border-white/10 bg-slate-950/55 p-6 backdrop-blur-sm transition hover:border-amber-300/20 hover:bg-slate-950/70"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                    Connect request
+                    Saved profile
                   </p>
                   <h3 className="mt-3 font-grotesque text-2xl font-semibold leading-tight text-white">
-                    {request.goal}
+                    {profile.name}
                   </h3>
+                  <p className="mt-3 text-sm text-slate-300">
+                    {profile.role} at {profile.company}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-400">
+                    {profile.profileWalletAddress ? (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-white/10 px-2.5 py-1">
+                        <Wallet className="size-3.5" />
+                        {profile.ensName ?? shortenAddress(profile.profileWalletAddress)}
+                      </span>
+                    ) : null}
+                    {profile.farcasterUrl && profile.farcasterHandle ? (
+                      <a
+                        className="inline-flex items-center gap-1 rounded-full border border-white/10 px-2.5 py-1 transition hover:border-white/20 hover:text-white"
+                        href={profile.farcasterUrl}
+                        rel="noreferrer"
+                        target="_blank"
+                      >
+                        fc/{profile.farcasterHandle}
+                        <ExternalLink className="size-3.5" />
+                      </a>
+                    ) : null}
+                    {profile.xUrl && profile.xHandle ? (
+                      <a
+                        className="inline-flex items-center gap-1 rounded-full border border-white/10 px-2.5 py-1 transition hover:border-white/20 hover:text-white"
+                        href={profile.xUrl}
+                        rel="noreferrer"
+                        target="_blank"
+                      >
+                        @{profile.xHandle}
+                        <ExternalLink className="size-3.5" />
+                      </a>
+                    ) : null}
+                    {profile.githubUrl && profile.githubHandle ? (
+                      <a
+                        className="inline-flex items-center gap-1 rounded-full border border-white/10 px-2.5 py-1 transition hover:border-white/20 hover:text-white"
+                        href={profile.githubUrl}
+                        rel="noreferrer"
+                        target="_blank"
+                      >
+                        <Github className="size-3.5" />
+                        {profile.githubHandle}
+                      </a>
+                    ) : null}
+                    {profile.talentProtocolUrl ? (
+                      <a
+                        className="inline-flex items-center gap-1 rounded-full border border-white/10 px-2.5 py-1 transition hover:border-white/20 hover:text-white"
+                        href={profile.talentProtocolUrl}
+                        rel="noreferrer"
+                        target="_blank"
+                      >
+                        <Sparkles className="size-3.5" />
+                        Talent
+                      </a>
+                    ) : null}
+                  </div>
                 </div>
                 <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-400">
-                  {request.id.slice(0, 8)}
+                  <Bookmark className="size-3.5" />
                 </span>
               </div>
-              <p className="mt-5 text-sm text-slate-400">
-                {request.requester ? `Requested by ${request.requester}` : 'No requester name'}
-              </p>
+              {profile.reason ? (
+                <p className="mt-5 text-sm text-slate-400">{profile.reason}</p>
+              ) : null}
+              {profile.contributionSummary ? (
+                <p className="mt-3 text-sm text-slate-500">{profile.contributionSummary}</p>
+              ) : null}
               <p className="mt-2 text-sm text-slate-500">
-                {new Date(request.createdAt).toLocaleString()}
+                {new Date(profile.createdAt).toLocaleString()}
               </p>
-              <Link
-                className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-amber-200 transition group-hover:text-amber-100"
-                to={`/requests/${request.id}/results`}
-              >
-                Open next slice placeholder
-                <ArrowRight className="size-4" />
-              </Link>
             </article>
           ))}
         </div>

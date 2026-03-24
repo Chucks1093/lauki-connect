@@ -2,19 +2,19 @@
 
 ## Goal
 
-Build a working intro engine that accepts a request and returns ranked matches with explanations.
+Build a working intro engine that accepts a search intent and returns ranked profiles with explanations.
 
 ## Must-have
 
-- request form
+- landing search bar
 - ranked results
 - match explanation
-- suggested intro message
-- feedback action
+- save profile action
 
 ## Nice-to-have
 
+- profile detail view
 - saved history
 - filters by role or region
-- Telegram handoff
-- Lauki live integration instead of a mock adapter
+- public contact links
+- real profile ingestion instead of mock profiles

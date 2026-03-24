@@ -2,14 +2,16 @@
 
 This file breaks the build into vertical slices from start to finish.
 
-The goal is to build one feature at a time, test it through the frontend, and only then move to the next feature.
+Current product rule:
+- this is our own intro and discovery engine
+- we are not waiting on a Lauki API
+- we own profile search, ranking, saved matches, and future data ingestion
 
 ## Build Rule
 
 Each section should ship a working user-visible flow, not just backend or frontend code in isolation.
 
 For every section, we should aim to complete:
-
 1. UI
 2. API
 3. persistence if needed
@@ -17,7 +19,30 @@ For every section, we should aim to complete:
 5. error-state test
 6. short manual demo check
 
-That means we should avoid building the whole backend first and the whole frontend later.
+## Product Frame
+
+Lauki Connect helps people find the right investor, builder, operator, partner, or opportunity for what they are working on.
+
+Core loop:
+1. user describes what they need
+2. app searches profiles
+3. app ranks the best matches
+4. app explains why they fit
+5. user saves profiles or reaches out directly
+
+## Parallel Base Track
+
+Purpose:
+Add Base-native identity and credibility without forcing core search logic onchain.
+
+Rule:
+- keep search and ranking in the normal app
+- use Base for wallet identity and future reputation signals
+- do not move search logic onchain
+- do not add gas costs to normal app usage
+
+Best first Base feature:
+wallet sign-in + Base builder profile
 
 ## Section 1: Workspace Foundation
 
@@ -25,265 +50,201 @@ Purpose:
 Set up the repo so both apps can run locally and we can iterate safely.
 
 Steps:
-1. create the root project structure
-2. add separate `client` and `server` apps
-3. add root `README.md`
-4. add root `docker-compose.yml` for Postgres
-5. add `.gitignore`
-6. define package managers and scripts
-7. install dependencies for both apps
-8. confirm both apps build
-9. add a basic health check route on the server
-10. add a basic frontend shell that can talk to the server
+1. keep a separate `client` and `server`
+2. use Vite + React for the client
+3. use Next.js for the server
+4. connect the server to Supabase directly
+5. add root documentation
+6. confirm both apps build
+7. confirm the client can talk to the server
+8. confirm the server health route works
 
 Deliverable:
-A working local workspace with Vite frontend, Node.js backend, and Docker Postgres.
+A working local workspace with a Vite frontend and a Next.js server.
 
 Test check:
 - frontend loads locally
-- backend responds locally
+- server responds locally
 - `GET /api/health` works from the frontend
 
-## Section 2: Product Contract
+## Section 2: Wallet Auth Slice
 
 Purpose:
-Lock the MVP before building too much behavior.
+Use Base wallet sign-in as the app identity layer.
 
 Steps:
-1. define the main user of the app
-2. define the main problem they are trying to solve
-3. define the exact request input fields for MVP
-4. define the exact output fields for a match
-5. define what makes a match useful
-6. define the first success metric for the MVP
-7. define the shortest demo flow from request to result
-8. write 3 to 5 sample requests we can use throughout development
-9. define what we mean by `good enough` for the first ranking pass
+1. add nonce route
+2. add verify route
+3. add session route
+4. add logout route
+5. verify signed message server-side
+6. store session in cookie
+7. show sign-in state in the header
+8. show connected wallet state in the header
 
 Deliverable:
-A locked MVP contract for requests, matches, intro suggestions, and feedback.
+A user can sign in with a Base wallet and the app can read that session.
 
 Test check:
-- every later feature can be checked against these inputs, outputs, and demo scenarios
+- user can sign in
+- valid signature creates session
+- invalid signature is rejected
+- logout clears session
 
-## Section 3: Request Submission Slice
+## Section 3: Search Slice
 
 Purpose:
-Build the first real feature: submit a request from the frontend and save it.
+Let the user search directly from the landing page without creating a connect-request record.
 
 Steps:
-1. design the `ConnectRequest` model
-2. add the model to `server/prisma/schema.prisma`
-3. create the database connection layer
-4. run `prisma generate`
-5. push the schema to local Postgres
-6. add `POST /api/connect-requests`
-7. validate request input with Zod
-8. build the request form UI
-9. collect goal, requester, and optional filters
-10. submit the form from the frontend
-11. handle loading, success, and error states
-12. show a confirmation state or redirect after creation
+1. define the profile search request shape
+2. define the profile result shape
+3. add `POST /api/profiles/search`
+4. wire landing search input to the endpoint
+5. add loading, success, and failure states
+6. support quick prompts in the landing page
 
 Deliverable:
-A working request flow from form input to a saved request record.
+A user can search from the landing page and get ranked profile matches back immediately.
 
 Test check:
-- user can submit a request from the UI
-- request is saved in the database
-- invalid input shows clear errors
+- valid search returns results
+- invalid search shows clear error
+- landing page stays on the root route
 
-## Section 4: First Match Results Slice
+## Section 4: Match Card Slice
 
 Purpose:
-Return and display the first ranked matches using mock Lauki data.
+Make search results easy to scan and compare.
 
 Steps:
-1. define the Lauki adapter interface
-2. start with a mock adapter for local development
-3. define the candidate match shape
-4. implement a simple ranking function
-5. add explanation generation for each match
-6. add intro draft generation for each match
-7. add `GET /api/connect-requests/:id/matches`
-8. build the results page in the frontend
-9. fetch matches for the created request
-10. show score, reason, and intro draft
-11. handle empty and failure states
+1. design the profile card layout
+2. show name, role, company, score, and reason
+3. make the result cards consistent with the landing page style
+4. make save action visible on each card
+5. support empty and loading states
 
 Deliverable:
-A user can submit a request and see ranked matches with explanations.
+Polished result cards that feel like a real product surface.
 
 Test check:
-- seeded mock candidates return deterministic results
-- results render in the frontend in ranked order
-- empty state and API failure state are visible and understandable
+- result cards render in ranked order
+- card content is readable and consistent
+- save action is visible and clear
 
-## Section 5: Match Detail Slice
+## Section 5: Saved Matches Slice
 
 Purpose:
-Turn a ranked result into something the user can inspect and act on.
+Let users keep the best profiles for later.
 
 Steps:
-1. persist candidate matches if needed for later actions
-2. create the match detail screen
-3. show the full explanation for the match
-4. show key profile and context details
-5. show the recommended intro angle
-6. show the suggested intro message
-7. add simple match status labels such as `new`, `reviewed`, or `contacted`
-8. link each result card to the detail page
+1. define the saved profile model
+2. add Supabase migration for saved profiles
+3. add `GET /api/profiles/saved`
+4. add `POST /api/profiles/saved`
+5. add `DELETE /api/profiles/saved/:profileId`
+6. build the dashboard as a saved matches page
 
 Deliverable:
-A match detail view that makes each recommendation actionable.
+Authenticated users can save and revisit profile matches.
 
 Test check:
-- clicking a result opens the correct detail view
-- detail data matches what was shown in results
-- status labels render correctly
+- signed-in user can save a profile
+- saved profile appears on dashboard
+- remove action works correctly
 
-## Section 6: Feedback Slice
+## Section 6: Profile Detail Slice
 
 Purpose:
-Capture whether the recommendations are useful.
+Turn a search result into something the user can inspect before reaching out.
 
 Steps:
-1. design the `FeedbackEvent` model
-2. store feedback against the request and optional match
-3. add `POST /api/feedback`
-4. add feedback controls on result cards or detail view
-5. support positive and negative feedback
-6. support an optional note
-7. show success and failure states in the frontend
+1. create a profile detail screen
+2. show full reason and fit context
+3. show public profile links if available
+4. show a suggested intro angle
+5. show public contact path if available
 
 Deliverable:
-A working feedback loop with stored feedback events.
+A profile detail view that helps users decide whether to reach out.
 
 Test check:
-- feedback can be submitted from the UI
-- feedback is saved correctly
-- repeated feedback behavior is defined and handled clearly
+- user can open a profile detail view
+- detail content matches the selected result
 
-## Section 7: Request History Slice
+## Section 7: Ranking Improvement Slice
 
 Purpose:
-Make past requests and their results easy to revisit.
+Improve the quality of search results beyond simple keyword overlap.
 
 Steps:
-1. add `GET /api/connect-requests`
-2. build the dashboard page
-3. list saved requests with useful metadata
-4. allow navigation back into results for an old request
-5. show empty state for a new user
-6. keep the data shape simple and fast to scan
+1. improve scoring for role alignment
+2. improve scoring for geography
+3. improve scoring for stage or market relevance
+4. improve scoring for Base ecosystem alignment
+5. improve explanation text so it reflects the score
 
 Deliverable:
-A basic dashboard with saved request history.
+Better ranking with more believable explanations.
 
 Test check:
-- old requests appear after creation
-- user can reopen previous results
-- empty dashboard state is clear
+- same searches produce more sensible ordering
+- weak matches are easier to spot
 
-## Section 8: Ranking Improvement Slice
+## Section 8: Real Data Slice
 
 Purpose:
-Improve match quality beyond the first simple scoring pass.
+Replace mock profiles with real profile data.
 
 Steps:
-1. add scoring rules for role alignment
-2. add scoring rules for geography or market context
-3. add scoring rules for trust distance or network proximity
-4. add scoring rules for mutual context
-5. add recency or freshness where relevant
-6. handle low-confidence results
-7. refine explanation text so the reasons reflect the scoring logic
-8. compare improved scoring against the sample requests from Section 2
+1. decide the first real data source
+2. define ingestion format
+3. store normalized profiles in Supabase
+4. search local stored profiles instead of only mock data
+5. add source metadata and freshness data
 
 Deliverable:
-A stronger ranking engine with more believable reasons.
+Search is backed by real profile data, not only mock profiles.
 
 Test check:
-- ranking changes are visible on known sample requests
-- explanation text stays aligned with actual scoring behavior
-- weak matches are clearly identified
+- ingested profiles are searchable
+- search still responds fast
+- ranking works on real records
 
-## Section 9: Lauki Integration Slice
+## Section 9: Enrichment Slice
 
 Purpose:
-Prepare the system to swap mock data for real Lauki-backed retrieval.
+Make profiles more useful by adding public identity and context.
 
 Steps:
-1. define exactly what data is needed from Lauki
-2. map Lauki entities into local candidate types
-3. isolate all external integration code behind the adapter boundary
-4. add configuration for mock versus live mode
-5. add fallback behavior if live Lauki data is unavailable
-6. verify the API contract does not need to change when the adapter changes
+1. add Base wallet identity where available
+2. add Basenames or ENS if available
+3. add Farcaster or GitHub links if available
+4. show public signals on the profile card or detail view
 
 Deliverable:
-A clean Lauki adapter boundary with mock data first and live integration ready later.
+Richer profiles with stronger credibility and context.
 
 Test check:
-- mock mode still works reliably
-- live adapter can be introduced without rewriting the frontend
+- enriched data appears cleanly
+- missing enrichment does not break the UI
 
-## Section 10: Action Workflow Slice
+## Section 10: Demo Readiness Slice
 
 Purpose:
-Move from recommendation to outreach.
+Make the product coherent and easy to show.
 
 Steps:
-1. define the first handoff action for MVP or near-MVP
-2. start with a simple action such as copy intro text or mark as contacted
-3. prepare the structure for future Telegram or email actions
-4. track outcome states such as `intro sent`, `accepted`, `replied`, or `converted`
-5. make sure action history is visible in the UI
+1. clean all stale request-era language
+2. tighten empty states
+3. tighten save flow messaging
+4. confirm auth flow is stable
+5. confirm search flow is stable
+6. confirm dashboard flow is stable
 
 Deliverable:
-A basic action layer that helps users follow through on a match.
+A demo-ready MVP that clearly shows the product value.
 
 Test check:
-- user can take at least one clear follow-up action from the frontend
-- outcome state changes are saved and visible
-
-## Section 11: Quality and Demo Readiness
-
-Purpose:
-Make the product stable, understandable, and easy to demo.
-
-Steps:
-1. clean up naming across the app
-2. remove old placeholders and dead code
-3. prepare seeded mock scenarios for demos
-4. test the full flow end to end
-5. verify setup instructions are accurate
-6. make the landing page explain the product clearly
-7. prepare short launch copy
-8. prepare screenshots or a short walkthrough
-
-Deliverable:
-A demo-ready MVP that clearly shows the value of Lauki Connect.
-
-Test check:
-- a new user can understand the product quickly
-- the full request to result flow works without manual fixes
-- demo scenarios are reliable and repeatable
-
-## Recommended Build Order Summary
-
-Build in this order:
-
-1. foundation
-2. product contract
-3. request submission
-4. first match results
-5. match detail
-6. feedback
-7. request history
-8. ranking improvements
-9. Lauki integration
-10. action workflow
-11. demo readiness
-
-This order keeps the project user-visible at every step and makes it easier to test one feature at a time through the frontend.
+- new user can understand the app quickly
+- search, save, and revisit flow works cleanly
