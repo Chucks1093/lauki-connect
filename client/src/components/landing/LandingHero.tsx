@@ -16,7 +16,7 @@ export function LandingHero({ title, description }: LandingHeroProps) {
 			</div>
 
 			<div className="mt-5 max-w-3xl">
-				<h1 className="font-manrope text-4xl font-semibold leading-[0.98] tracking-[-0.045em] text-neutral-900 sm:text-5xl md:text-6xl">
+				<h1 className="font-manrope text-4xl font-semibold leading-[1.08] tracking-[-0.045em] text-neutral-900 sm:text-5xl md:text-6xl">
 					Turn business needs into
 					<span className="block text-[#ff5c16]">{title}</span>
 				</h1>
