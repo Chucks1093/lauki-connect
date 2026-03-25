@@ -9,6 +9,10 @@ function isLocalhostOrigin(origin: string) {
   return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
 }
 
+function isTrustedFrontendOrigin(origin: string) {
+  return origin.endsWith('.sites.lauki.ai');
+}
+
 export function buildCorsHeaders(request: NextRequest) {
   const requestOrigin = normalizeOrigin(request.headers.get('origin'));
   const configuredOrigins = [
@@ -23,7 +27,10 @@ export function buildCorsHeaders(request: NextRequest) {
   }
 
   const requestMatchesConfiguredOrigin = configuredOrigins.some(
-    origin => origin === requestOrigin || isLocalhostOrigin(origin),
+    origin =>
+      origin === requestOrigin ||
+      (requestOrigin ? isLocalhostOrigin(requestOrigin) : false) ||
+      (requestOrigin ? isTrustedFrontendOrigin(requestOrigin) : false),
   );
 
   if (requestOrigin && (!configuredOrigins.length || requestMatchesConfiguredOrigin)) {
